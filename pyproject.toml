@@ -2,7 +2,7 @@
 name = "obsidian-gnome-search-provider"
 version = "1.0.0"
 description = "A GNOME Shell Search Provider for Obsidian Vaults"
-requires-python = ">=3.8"
+requires-python = ">=3.11"
 dependencies = [
     "PyGObject",
 ]
@@ -17,7 +17,7 @@ dev = [
 
 [tool.ruff]
 line-length = 120
-target-version = "py38"
+target-version = "py311"
 
 [tool.ruff.lint]
 select = ["E", "F", "I"] # PEP8 errors, pyflakes, and isort imports
