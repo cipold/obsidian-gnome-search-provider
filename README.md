@@ -70,3 +70,11 @@ makepkg -si
 
 This will package your local repository files into a `.pkg.tar.zst` and cleanly install it using `pacman`. To rebuild
 and overwrite an existing local installation, you can use `makepkg -si --force`.
+
+If you modify the python script (`obsidian-search-provider.py`) and reinstall it, GNOME Shell will continue to use the
+old background process until it is stopped. To force D-Bus to load your new version on the next search without logging
+out, kill the existing process:
+
+```bash
+pkill -f obsidian-search-provider
+```
