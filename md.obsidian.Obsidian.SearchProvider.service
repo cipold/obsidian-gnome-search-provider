@@ -1,0 +1,3 @@
+[D-BUS Service]
+Name=md.obsidian.Obsidian.SearchProvider
+Exec=/usr/bin/obsidian-search-provider

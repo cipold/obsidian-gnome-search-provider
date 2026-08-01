@@ -1,0 +1,26 @@
+[project]
+name = "obsidian-gnome-search-provider"
+version = "1.0.0"
+description = "A GNOME Shell Search Provider for Obsidian Vaults"
+requires-python = ">=3.8"
+dependencies = [
+    "PyGObject",
+]
+
+[dependency-groups]
+dev = [
+    "ruff",
+    "mypy",
+    "PyGObject-stubs",
+    "pre-commit",
+]
+
+[tool.ruff]
+line-length = 120
+target-version = "py38"
+
+[tool.ruff.lint]
+select = ["E", "F", "I"] # PEP8 errors, pyflakes, and isort imports
+
+[tool.mypy]
+ignore_missing_imports = true
