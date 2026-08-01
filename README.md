@@ -1,7 +1,19 @@
 # Obsidian GNOME Search Provider
 
-A GNOME Shell search provider for [Obsidian](https://obsidian.md). It allows you to search for and open your Obsidian
-vaults listed in `~/.config/obsidian/obsidian.json` directly from the GNOME activity overview.
+A GNOME Shell search provider for [Obsidian](https://obsidian.md). It integrates your Obsidian vaults into the GNOME
+activity overview, allowing you to quickly find and launch them.
+
+## Usage
+
+![Demo showing search provider results](assets/demo.png)
+
+After installation and reloading of the search providers simply type in the name of your vault to open it directly in
+obsidian.
+
+To list of all your registered vaults type `obsidian` or `vault`. The results display the name of the vault as well as
+its path.
+
+It reads `~/.config/obsidian/obsidian.json` to list all registered vaults.
 
 ## Installation
 
@@ -34,7 +46,7 @@ search provider.
 Logs are written to the system journal since this acts as a D-Bus service. You can inspect logs using:
 
 ```bash
-journalctl --user -u dbus.service | grep obsidian-search-provider
+journalctl --user --since today | grep obsidian-search-provider
 ```
 
 ## Development
