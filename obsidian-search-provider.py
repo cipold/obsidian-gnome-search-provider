@@ -6,7 +6,7 @@ import sys
 import traceback
 import urllib.parse
 from pathlib import Path
-from typing import Dict
+from typing import Any, Dict
 
 import gi
 
@@ -48,10 +48,10 @@ DBUS_XML = """<node>
 
 class ObsidianSearchProvider:
     def __init__(self) -> None:
-        self.vaults: Dict[str, str] = self._load_vaults()
+        self.vaults: Dict[str, Dict[str, Any]] = self._load_vaults()
 
-    def _load_vaults(self) -> Dict[str, str]:
-        """Load vault IDs and their base paths from obsidian.json."""
+    def _load_vaults(self) -> Dict[str, Dict[str, Any]]:
+        """Load vault IDs and their metadata from obsidian.json."""
         config_path = Path.home() / ".config" / "obsidian" / "obsidian.json"
         vaults = {}
         if config_path.exists():
@@ -61,7 +61,11 @@ class ObsidianSearchProvider:
                     for v_id, v_data in data.get("vaults", {}).items():
                         vault_path = v_data.get("path", "")
                         if vault_path:
-                            vaults[v_id] = Path(vault_path).name
+                            vaults[v_id] = {
+                                "name": Path(vault_path).name,
+                                "path": vault_path,
+                                "ts": v_data.get("ts", 0),
+                            }
             except Exception as e:
                 logger.error(f"Failed to read obsidian.json: {e}")
         return vaults
@@ -88,7 +92,10 @@ class ObsidianSearchProvider:
                 if ("obsidian".startswith(query) or "vault".startswith(query)) and len(query) >= 3:
                     results = list(self.vaults.keys())
                 else:
-                    results = [v_id for v_id, name in self.vaults.items() if query in name.lower()]
+                    results = [v_id for v_id, v_info in self.vaults.items() if query in v_info["name"].lower()]
+
+                # Sort results by timestamp (most recent first)
+                results.sort(key=lambda v_id: self.vaults[v_id].get("ts", 0), reverse=True)
 
                 invocation.return_value(GLib.Variant("(as)", (results,)))
 
@@ -96,13 +103,18 @@ class ObsidianSearchProvider:
                 identifiers = params.unpack()[0]
                 metas = []
                 for v_id in identifiers:
-                    name = self.vaults.get(v_id, "Unknown Vault")
+                    v_info = self.vaults.get(v_id, {})
+                    name = v_info.get("name", "Unknown Vault")
+                    path = v_info.get("path", "Unknown Path")
+
+                    description = path
+
                     metas.append(
                         {
                             "id": GLib.Variant("s", v_id),
                             "name": GLib.Variant("s", name),
-                            "description": GLib.Variant("s", "Obsidian Vault"),
-                            "icon": GLib.Variant("v", GLib.Variant("s", "obsidian")),
+                            "description": GLib.Variant("s", description),
+                            "gicon": GLib.Variant("s", "folder-symbolic"),
                         }
                     )
                 invocation.return_value(GLib.Variant("(aa{sv})", (metas,)))
@@ -110,7 +122,7 @@ class ObsidianSearchProvider:
             elif method == "ActivateResult":
                 identifier = params.unpack()[0]
                 if identifier in self.vaults:
-                    name = self.vaults[identifier]
+                    name = self.vaults[identifier]["name"]
                     uri = f"obsidian://open?vault={urllib.parse.quote(name)}"
                     subprocess.Popen(["xdg-open", uri])
                 invocation.return_value(None)
