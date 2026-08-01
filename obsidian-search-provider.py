@@ -100,8 +100,8 @@ class ObsidianSearchProvider:
                     v_id for v_id, v_info in self.vaults.items() if all(matches(t, v_info["name"]) for t in terms)
                 ]
 
-                # Sort results by timestamp (most recent first)
-                results.sort(key=lambda v_id: self.vaults[v_id].get("ts", 0), reverse=True)
+                # Sort results alphabetically by vault name
+                results.sort(key=lambda v_id: self.vaults[v_id]["name"].lower())
 
                 invocation.return_value(GLib.Variant("(as)", (results,)))
 
