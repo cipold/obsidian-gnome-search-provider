@@ -86,13 +86,19 @@ class ObsidianSearchProvider:
 
             if method in ("GetInitialResultSet", "GetSubsearchResultSet"):
                 terms = params.unpack()[1] if method == "GetSubsearchResultSet" else params.unpack()[0]
-                query = " ".join(terms).lower()
 
-                # If query exactly matches 'obsidian' or 'vault', show all vaults
-                if ("obsidian".startswith(query) or "vault".startswith(query)) and len(query) >= 3:
-                    results = list(self.vaults.keys())
-                else:
-                    results = [v_id for v_id, v_info in self.vaults.items() if query in v_info["name"].lower()]
+                def matches(term, name):
+                    term = term.lower()
+                    if term in name.lower():
+                        return True
+                    # Allow 'obsidian' or 'vault' as wildcards if term is >= 3 chars, or if part of a multi-word search
+                    if ("obsidian".startswith(term) or "vault".startswith(term)) and (len(term) >= 3 or len(terms) > 1):
+                        return True
+                    return False
+
+                results = [
+                    v_id for v_id, v_info in self.vaults.items() if all(matches(t, v_info["name"]) for t in terms)
+                ]
 
                 # Sort results by timestamp (most recent first)
                 results.sort(key=lambda v_id: self.vaults[v_id].get("ts", 0), reverse=True)
